@@ -1,20 +1,21 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
-import matplotlib.pyplot as plt
+from sklearn.metrics import silhouette_score
 
-def segment_customers(data_path, n_clusters=3):
-    df = pd.read_csv(data_path)
-    features = df[['annual_income', 'spending_score', 'age']]
-    
-    scaler = StandardScaler()
-    scaled_features = scaler.fit_transform(features)
-    
-    kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-    df['Cluster'] = kmeans.fit_predict(scaled_features)
-    
-    print(f"Customers successfully segmented into {n_clusters} groups.")
-    return df
+mall_data = pd.read_csv('Mall_Customers.csv')
 
-if __name__ == "__main__":
-    print("Running Customer Segmentation Engine...")
+income_spending = mall_data.iloc[:, [2, 3]].values
+
+scaler = StandardScaler()
+scaled_features = scaler.fit_transform(income_spending)
+
+kmeans_engine = KMeans(n_clusters=5, init='k-means++', random_state=42)
+cluster_labels = kmeans_engine.fit_predict(scaled_features)
+
+score = silhouette_score(scaled_features, cluster_labels)
+
+mall_data['ClusterGroup'] = cluster_labels
+print(mall_data.head())
+print(f"Clustering Performance (Silhouette Score): {score:.4f}")
